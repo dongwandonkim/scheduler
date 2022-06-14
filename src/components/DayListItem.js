@@ -1,7 +1,15 @@
-import React from 'react';
+import React from "react";
+import classNames from "classnames";
+import "components/DayListItem.scss";
+
 export default function DayListItem(props) {
+  const dayListItemStyle = classNames("day-list__item", {
+    "day-list__item--selected": props.selected,
+    "day-list__item--full": props.spots === 0 && true,
+  });
   return (
     <li
+      className={dayListItemStyle}
       onClick={() => {
         props.setDay(props.name);
       }}
