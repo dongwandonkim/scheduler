@@ -10,6 +10,7 @@ export default function Application() {
   const [state, setState] = useState({
     day: 'Monday',
     days: [],
+
     // you may put the line below, but will have to remove/comment hardcoded appointments variable
     appointments: {},
   });
@@ -21,7 +22,7 @@ export default function Application() {
 
   const dailyAppointments = getAppointmentsForDay(state, state.day);
 
-  const apiUrl = 'http://localhost:8001/api/';
+  const apiUrl = '/api/';
 
   useEffect(() => {
     Promise.all([
@@ -60,7 +61,6 @@ export default function Application() {
       <section className="schedule">
         {dailyAppointments.map((appointment) => {
           const interview = getInterview(state, appointment.interview);
-
           return (
             <Appointment
               key={appointment.id}

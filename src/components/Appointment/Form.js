@@ -1,20 +1,21 @@
-import React, { useState } from "react";
-import InterviewerList from "../InterviewerList";
-import Button from "../Button";
+import React, {useState} from 'react';
+import InterviewerList from '../InterviewerList';
+import Button from '../Button';
 
 const Form = (props) => {
-  const [student, setStudent] = useState(props.student || "");
+  const [student, setStudent] = useState(props.student || '');
   const [interviewer, setInterviewer] = useState(props.interviewer || null);
 
   const reset = () => {
     cancel();
-    setStudent("");
+    setStudent('');
     setInterviewer(null);
   };
 
   const cancel = () => {
     props.onCancel();
   };
+  console.log('me form');
   return (
     <main className="appointment__card appointment__card--create">
       <section className="appointment__card-left">
