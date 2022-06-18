@@ -21,13 +21,15 @@ export function getInterview(state, interview) {
   return newInterview;
 }
 
-/**
- * "interview": {
-    "student": "Lydia Miller-Jones",
-    "interviewer": {
-      "id": 1,
-      "name": "Sylvia Palmer",
-      "avatar": "https://i.imgur.com/LpaY82x.png"
-    }
+export function getInterviewersForday(state, day) {
+  const dayList = state.days.filter((d) => d.name === day && d.interviewers);
+
+  if (!dayList.length) {
+    return [];
   }
- */
+  const filteredList = dayList[0].interviewers.map(
+    (id) => state.interviewers[id]
+  );
+
+  return filteredList;
+}
