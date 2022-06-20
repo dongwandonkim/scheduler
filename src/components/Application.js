@@ -23,6 +23,55 @@ export default function Application() {
 
   const dailyAppointments = getAppointmentsForDay(state, state.day);
 
+  const renderAppointments = dailyAppointments.map((appointment) => {
+    const interview = getInterview(state, appointment.interview);
+    const interviewers = getInterviewersForday(state, state.day);
+
+    return (
+      <Appointment
+        key={appointment.id}
+        id={appointment.id}
+        time={appointment.time}
+        interview={interview}
+        interviewers={interviewers}
+        bookInterview={bookInterview}
+        cancelInterview={cancelInterview}
+      />
+    );
+  });
+
+  function bookInterview(id, interview) {
+    console.log(id, interview);
+    const appointment = {
+      ...state.appointments[id],
+      interview: {...interview},
+    };
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment,
+    };
+
+    return axios.put(`/api/appointments/${id}`, {interview}).then(() => {
+      setState({...state, appointments});
+    });
+  }
+
+  function cancelInterview(id) {
+    const appointment = {
+      ...state.appointments[id],
+      interview: null,
+    };
+
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment,
+    };
+
+    return axios.delete(`/api/appointments/${id}`).then(() => {
+      setState({...state, appointments});
+    });
+  }
+
   const apiUrl = '/api/';
 
   useEffect(() => {
@@ -31,6 +80,7 @@ export default function Application() {
       axios.get(apiUrl + 'appointments'),
       axios.get(apiUrl + 'interviewers'),
     ]).then((all) => {
+      console.log(all);
       setState((prev) => ({
         ...prev,
         days: all[0].data,
@@ -59,20 +109,7 @@ export default function Application() {
         />
       </section>
       <section className="schedule">
-        {dailyAppointments.map((appointment) => {
-          const interview = getInterview(state, appointment.interview);
-          const interviewers = getInterviewersForday(state, state.day);
-          console.log(interviewers);
-          return (
-            <Appointment
-              key={appointment.id}
-              id={appointment.id}
-              time={appointment.time}
-              interview={interview}
-              interviewers={interviewers}
-            />
-          );
-        })}
+        {renderAppointments}
         <Appointment key="last" time="5pm" />
       </section>
     </main>
