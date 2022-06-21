@@ -1,10 +1,11 @@
 import axios from 'axios';
 import {useReducer} from 'react';
-import {useState, useEffect} from 'react';
+import {useEffect} from 'react';
 
 const SET_DAY = 'SET_DAY';
 const SET_APPLICATION_DATA = 'SET_APPLICATION_DATA';
 const SET_INTERVIEW = 'SET_INTERVIEW';
+const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
 
 function reducer(state, action) {
   switch (action.type) {
@@ -64,61 +65,14 @@ export default function useApplicationData() {
   };
 
   function bookInterview(id, interview) {
-    // TODO
-    const appointment = {
-      ...state.appointments[id],
-      interview: {...interview},
-    };
-
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment,
-    };
-
     return axios.put(`/api/appointments/${id}`, {interview}).then(() => {
-      // setState((prev) => {
-      //   const newDays = getUpdatedSpots(prev, id, true);
-
-      //   return {
-      //     ...prev,
-      //     days: newDays,
-      //     appointments,
-      //   };
-      // });
-      dispatch({
-        type: SET_INTERVIEW,
-        days: getUpdatedSpots(state, id, true),
-        appointments,
-      });
+      webSocket.send('SET_INTERVIEW');
     });
   }
 
   function cancelInterview(id) {
-    const appointment = {
-      ...state.appointments[id],
-      interview: null,
-    };
-
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment,
-    };
-
     return axios.delete(`/api/appointments/${id}`).then(() => {
-      // setState((prev) => {
-      //   const newDays = getUpdatedSpots(prev, id, false);
-
-      //   return {
-      //     ...prev,
-      //     days: newDays,
-      //     appointments,
-      //   };
-      // });
-      dispatch({
-        type: SET_INTERVIEW,
-        days: getUpdatedSpots(state, id, false),
-        appointments,
-      });
+      webSocket.send('SET_INTERVIEW');
     });
   }
 
@@ -130,13 +84,6 @@ export default function useApplicationData() {
       axios.get(apiUrl + 'appointments'),
       axios.get(apiUrl + 'interviewers'),
     ]).then((all) => {
-      console.log(all);
-      // setState((prev) => ({
-      //   ...prev,
-      //   days: all[0].data,
-      //   appointments: all[1].data,
-      //   interviewers: all[2].data,
-      // }));
       dispatch({
         type: SET_APPLICATION_DATA,
         days: all[0].data,
@@ -145,6 +92,39 @@ export default function useApplicationData() {
       });
     });
   }, []);
+
+  useEffect(() => {
+    webSocket.onopen = function (event) {
+      webSocket.send('ping');
+    };
+
+    webSocket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+
+      let appointment = {};
+      if (data.interview === null) {
+        appointment = {
+          ...state.appointments[data.id],
+          interview: null,
+        };
+      } else {
+        appointment = {
+          ...state.appointments[data.id],
+          interview: {...data.interview},
+        };
+      }
+
+      const appointments = {
+        ...state.appointments,
+        [data.id]: appointment,
+      };
+      dispatch({
+        type: SET_INTERVIEW,
+        days: getUpdatedSpots(state, data.id, data.interview ? true : false),
+        appointments,
+      });
+    };
+  });
 
   return {
     state,
