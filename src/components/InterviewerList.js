@@ -6,13 +6,14 @@ export default function InterviewerList(props) {
   const renderInterviewers = (interviewers) => {
     return interviewers.map((interviewer) => {
       const {id, name, avatar} = interviewer;
+      // console.log('#########', interviewer, props.value);
       return (
         <InterviewerListItem
           key={id}
           name={name}
           avatar={avatar}
-          setInterviewer={() => props.onChange(id)}
           selected={props.value === id}
+          setInterviewer={() => props.onChange(id)}
         />
       );
     });

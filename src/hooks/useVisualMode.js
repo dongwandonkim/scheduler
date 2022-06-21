@@ -9,6 +9,7 @@ export default function useVisualMode(initial) {
       if (replace) {
         setModeHistory((prev) => {
           prev.pop();
+          console.log([...prev, mode]);
           return [...prev, mode];
         });
       } else {

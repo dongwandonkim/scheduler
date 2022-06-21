@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
-
+import React from 'react';
+import useApplicationData from 'hooks/useApplicationData';
 import 'components/Application.scss';
 import DayList from './DayList';
 import Appointment from 'components/Appointment';
@@ -11,15 +10,7 @@ import {
 } from 'helpers/selectors';
 
 export default function Application() {
-  const [state, setState] = useState({
-    day: 'Monday',
-    days: [],
-
-    // you may put the line below, but will have to remove/comment hardcoded appointments variable
-    appointments: {},
-  });
-
-  const setDay = (day) => setState({...state, day});
+  const {state, setDay, bookInterview, cancelInterview} = useApplicationData();
 
   const dailyAppointments = getAppointmentsForDay(state, state.day);
 
@@ -39,56 +30,6 @@ export default function Application() {
       />
     );
   });
-
-  function bookInterview(id, interview) {
-    console.log(id, interview);
-    const appointment = {
-      ...state.appointments[id],
-      interview: {...interview},
-    };
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment,
-    };
-
-    return axios.put(`/api/appointments/${id}`, {interview}).then(() => {
-      setState({...state, appointments});
-    });
-  }
-
-  function cancelInterview(id) {
-    const appointment = {
-      ...state.appointments[id],
-      interview: null,
-    };
-
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment,
-    };
-
-    return axios.delete(`/api/appointments/${id}`).then(() => {
-      setState({...state, appointments});
-    });
-  }
-
-  const apiUrl = '/api/';
-
-  useEffect(() => {
-    Promise.all([
-      axios.get(apiUrl + 'days'),
-      axios.get(apiUrl + 'appointments'),
-      axios.get(apiUrl + 'interviewers'),
-    ]).then((all) => {
-      console.log(all);
-      setState((prev) => ({
-        ...prev,
-        days: all[0].data,
-        appointments: all[1].data,
-        interviewers: all[2].data,
-      }));
-    });
-  }, []);
 
   return (
     <main className="layout">
