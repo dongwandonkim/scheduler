@@ -94,25 +94,17 @@ export default function useApplicationData() {
   }, []);
 
   useEffect(() => {
-    webSocket.onopen = function (event) {
+    webSocket.onopen = function () {
       webSocket.send('ping');
     };
 
     webSocket.onmessage = function (event) {
       const data = JSON.parse(event.data);
 
-      let appointment = {};
-      if (data.interview === null) {
-        appointment = {
-          ...state.appointments[data.id],
-          interview: null,
-        };
-      } else {
-        appointment = {
-          ...state.appointments[data.id],
-          interview: {...data.interview},
-        };
-      }
+      const appointment = {
+        ...state.appointments[data.id],
+        interview: data.interview ? {...data.interview} : null,
+      };
 
       const appointments = {
         ...state.appointments,
