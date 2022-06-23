@@ -1,6 +1,5 @@
 import axios from 'axios';
-import {useReducer} from 'react';
-import {useEffect} from 'react';
+import {useReducer, useEffect} from 'react';
 
 const SET_DAY = 'SET_DAY';
 const SET_APPLICATION_DATA = 'SET_APPLICATION_DATA';
@@ -15,6 +14,7 @@ function reducer(state, action) {
         ...state,
         day: action.day,
       };
+
     case SET_APPLICATION_DATA:
       return {
         /* insert logic */
@@ -23,13 +23,14 @@ function reducer(state, action) {
         appointments: action.appointments,
         interviewers: action.interviewers,
       };
-    case SET_INTERVIEW: {
+
+    case SET_INTERVIEW:
       return {
         ...state,
         days: action.days,
         appointments: action.appointments,
       };
-    }
+
     default:
       throw new Error(
         `Tried to reduce with unsupported action type: ${action.type}`
@@ -46,6 +47,7 @@ export default function useApplicationData() {
 
   const setDay = (day) => dispatch({type: SET_DAY, day});
 
+  // get updated remaining spots for selected day
   const getUpdatedSpots = (state, appointmentId, onBook = true) => {
     const newDays = state.days.map((day) => {
       const foundAppointment = day.appointments.find(
@@ -61,6 +63,7 @@ export default function useApplicationData() {
         return day;
       }
     });
+
     return newDays;
   };
 
@@ -110,6 +113,7 @@ export default function useApplicationData() {
         ...state.appointments,
         [data.id]: appointment,
       };
+
       dispatch({
         type: SET_INTERVIEW,
         days: getUpdatedSpots(state, data.id, data.interview ? true : false),
