@@ -1,44 +1,17 @@
 import axios from 'axios';
+import {getAppointmentsForDay} from 'helpers/selectors';
+import {useState} from 'react';
 import {useReducer, useEffect} from 'react';
+import reducer, {
+  SET_DAY,
+  SET_APPLICATION_DATA,
+  SET_INTERVIEW,
+} from 'reducers/application';
 
-const SET_DAY = 'SET_DAY';
-const SET_APPLICATION_DATA = 'SET_APPLICATION_DATA';
-const SET_INTERVIEW = 'SET_INTERVIEW';
 const webSocket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
 
-function reducer(state, action) {
-  switch (action.type) {
-    case SET_DAY:
-      return {
-        /* insert logic */
-        ...state,
-        day: action.day,
-      };
-
-    case SET_APPLICATION_DATA:
-      return {
-        /* insert logic */
-        ...state,
-        days: action.days,
-        appointments: action.appointments,
-        interviewers: action.interviewers,
-      };
-
-    case SET_INTERVIEW:
-      return {
-        ...state,
-        days: action.days,
-        appointments: action.appointments,
-      };
-
-    default:
-      throw new Error(
-        `Tried to reduce with unsupported action type: ${action.type}`
-      );
-  }
-}
-
 export default function useApplicationData() {
+  const [mode, setMode] = useState('');
   const [state, dispatch] = useReducer(reducer, {
     day: 'Monday',
     days: [],
@@ -48,16 +21,21 @@ export default function useApplicationData() {
   const setDay = (day) => dispatch({type: SET_DAY, day});
 
   // get updated remaining spots for selected day
-  const getUpdatedSpots = (state, appointmentId, onBook = true) => {
+  const getUpdatedSpots = (state, appointmentId) => {
     const newDays = state.days.map((day) => {
       const foundAppointment = day.appointments.find(
         (a) => a === appointmentId
       );
 
-      if (foundAppointment) {
+      if (foundAppointment && mode === 'CREATE') {
         return {
           ...day,
-          spots: onBook ? day.spots - 1 : day.spots + 1,
+          spots: day.spots - 1,
+        };
+      } else if (foundAppointment && mode === 'DELETE') {
+        return {
+          ...day,
+          spots: day.spots + 1,
         };
       } else {
         return day;
@@ -67,13 +45,15 @@ export default function useApplicationData() {
     return newDays;
   };
 
-  function bookInterview(id, interview) {
+  function bookInterview(id, interview, mode) {
+    setMode(mode);
     return axios.put(`/api/appointments/${id}`, {interview}).then(() => {
       webSocket.send('SET_INTERVIEW');
     });
   }
 
-  function cancelInterview(id) {
+  function cancelInterview(id, mode) {
+    setMode(mode);
     return axios.delete(`/api/appointments/${id}`).then(() => {
       webSocket.send('SET_INTERVIEW');
     });
@@ -113,14 +93,15 @@ export default function useApplicationData() {
         ...state.appointments,
         [data.id]: appointment,
       };
+      // console.log(appointments);
 
       dispatch({
         type: SET_INTERVIEW,
-        days: getUpdatedSpots(state, data.id, data.interview ? true : false),
+        days: getUpdatedSpots(state, data.id),
         appointments,
       });
     };
-  });
+  }, [mode, state]);
 
   return {
     state,

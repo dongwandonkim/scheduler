@@ -34,7 +34,7 @@ export default function Appointment(props) {
     transition(SAVING, true);
 
     props
-      .bookInterview(props.id, interview)
+      .bookInterview(props.id, interview, mode === 'CREATE' ? 'CREATE' : 'EDIT')
       .then(() => transition(SHOW))
       .catch(() => transition(ERROR_SAVE, true));
   }
@@ -42,7 +42,7 @@ export default function Appointment(props) {
   function destroy() {
     transition(DELETE, true);
     props
-      .cancelInterview(props.id)
+      .cancelInterview(props.id, 'DELETE')
       .then(() => transition(EMPTY))
       .catch(() => transition(ERROR_DELETE, true));
   }
@@ -57,7 +57,7 @@ export default function Appointment(props) {
   }, [props.interview, transition, mode]);
 
   return (
-    <article className="appointment">
+    <article className="appointment" data-testid="appointment">
       <Header time={props.time} />
       {mode === EMPTY && <Empty onAdd={() => transition(CREATE)} />}
       {mode === SHOW && props.interview && (
