@@ -36,6 +36,14 @@ Install dependencies with `npm install`.
 npm start
 ```
 
+## Interview Scheduler API
+
+follow the README.md instructions
+
+```
+https://github.com/lighthouse-labs/scheduler-api
+```
+
 ## Running Jest Test Framework
 
 ```sh
