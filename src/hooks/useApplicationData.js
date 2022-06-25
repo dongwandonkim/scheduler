@@ -27,19 +27,16 @@ export default function useApplicationData() {
       );
 
       if (foundAppointment && mode === 'CREATE') {
-        console.log('1111111', mode);
         return {
           ...day,
           spots: day.spots - 1,
         };
       } else if (foundAppointment && mode === 'DELETE') {
-        console.log(mode);
         return {
           ...day,
           spots: day.spots + 1,
         };
       } else {
-        console.log('222222', mode);
         return {
           ...day,
         };
